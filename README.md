@@ -68,7 +68,7 @@ This step may seem redudant but here we will use the busco database again to mak
 ```
 python3 1_hmmsearch.py -h
 ```
-Reads and parses domtbl from `hmmsearch`
+Reads and parses domtbl from `hmmsearch` and uses an input E-value cutoff to remove sequences that have low hmm matching profile
 ```
 domtbl2unaln -h
 	Use --best 
@@ -77,13 +77,31 @@ The proteins option uses a index (.fai) file that includes of protein files that
 cat /path/to/pep/*.faa > pep_combined.fasta
 samtools faidx pep_combined.fasta
 ```
-Produces a full alignment by aligning every sequence to a seed concensus
+Produces a full alignment by aligning every sequence to a seed concensus using `hmmalign` and `trimAl`
 ```
 python3 2_hmmalign.py -h
 ```
-Finally we will generate individual genes alignments. Make sure to run output script in folder with fasta files
+Finally we will generate individual genes alignments for all taxon that had the gene and use 'fasttree' to create maximum likelihood gene phylogenetic reconstructions. Make sure to run output script in folder with fasta files
 ```
 python3 3_genetrees.py -h
 ```
+In the 2_hmmalign.py step `.trim` files were created with individual gene alignments for each gene that was included in the analysis. To perform a single phylogenetic reconstruction of all taxon and single copy othologs the individual gene alignments will need to be concatinated together. `SCGID` can be used to do this and is found here https://github.com/amsesk/SCGid. 
+
+This program is managed in a conda environmnet and to activate the environment run.
+```
+source SCGid/scgidenv/bin/activate
+```
+Now we can concatinate!
+```
+concatenate_msa.py -a /path/to/trim/files/directory -o output_file_name -s .aa.trim
+```
+The last step is to finally perform the phylogenetic reconstruction using iqtree2.
+```
+iqtree2 --seqtype AA -m JTT -s concat.fasta -T 20
+```
+## Ploting to output
+If you have experience in R I would highly recommend plotting your data via this software.
+
+
 
 
